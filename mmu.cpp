@@ -22,19 +22,22 @@ void MMU::add_program(Program* program)
     program_amount++;
 }
 
-void MMU::create_page_table(int page_amount)
+void MMU::create_page_table(int page_frames_amount)
 {
-    this->page_frames_amount = page_amount;
-    page_table = new QString*[page_amount];
-    for(int i = 0; i < page_amount + 1; i++)
-    {
-        page_table[i] = new QString[program_exec_list.size()];
-    }
-    for(int x = 0; x < page_amount + 1 ; x++){
-        for(int y = 0; y < program_exec_list.size(); y++)
-        {
-            page_table[x][y] = "";
-        }
+    // paginas = 5
+    // marcos = 3
+    this->page_frames_amount = page_frames_amount;
+//    page_table.reserve(page_frames_amount);
+//    for(int i = 0; i < page_amount + 1; i++)
+//    {
+//        page_table.at(i).
+//        page_table[i] = new QString[program_exec_list.size()];
+//    }
+//    despues tengo que agregar uno para ver si hubo fallo de pagina
+    for(int x = 0; x < page_frames_amount; x++){
+        vector<int> page_column;
+        page_column.reserve(program_exec_list.size());
+        page_table.push_back(page_column);
     }
 }
 
@@ -43,32 +46,51 @@ void MMU::add_program_to_exec_list(Program *program)
     program_exec_list.append(program);
 }
 
-int MMU::setup_page_table()
+void MMU::setup_page_table()
 {
+    for(int x = 0; x < page_table.size(); x++)
+    {
+        page_table.at(x).clear();
+    }
     QList<Program*> programs_in_execution;
 
     for(int x = 0; x < program_exec_list.size(); x++)
     {
-        if(programs_in_execution.size() < page_frames_amount)
+        bool added_program = false;
+        for(int y = 0; y < programs_in_execution.size(); y++)
         {
-            programs_in_execution.append(program_exec_list.at(x));
-        }
-        else
-        {
-            switch (algorithm)
+            if(program_exec_list.at(x)->id == programs_in_execution.at(y)->id)
             {
-                case 0:
-//                    if()
-                    break;
-                default:
-                    break;
+                page_failures.push_back(0);
+                added_program = true;
+            }
+        }
+
+        while(!added_program)
+        {
+            if(programs_in_execution.size() < page_frames_amount)
+            {
+                programs_in_execution.append(program_exec_list.at(x));
+                page_failures.push_back(1);
+                added_program = true;
+            }
+            else
+            {
+                switch (algorithm)
+                {
+                    case 0:
+                        break;
+                    default:
+                        break;
+                    added_program = true;
+                }
             }
         }
         for(int y = 0; y < programs_in_execution.size(); y++)
         {
-            page_table[x][y] = programs_in_execution.at(y)->name;
+//            cout<<dynamic_cast<page_table.at(x)><<endl;
+            page_table.at(x).push_back(programs_in_execution.at(y)->id);
         }
-
     }
 }
 

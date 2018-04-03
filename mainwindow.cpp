@@ -51,6 +51,19 @@ void MainWindow::on_setup_btn_clicked()
         }
         ui->tableWidget->setHorizontalHeaderLabels(table_header);
     }
+    mmu->setup_page_table();
+    for(int x = 0; x < mmu->page_table.size(); x++)
+    {
+        for(int y = 0; y < mmu->page_table.at(x).size(); y++)
+        {
+            ui->tableWidget->setItem(y, x, new QTableWidgetItem(mmu->get_program_by_id(mmu->page_table.at(x).at(y), mmu->first_program)->name));
+        }
+    }
+    //setup page failures
+    for(int x = 0; x < mmu->program_exec_list.size(); x++)
+    {
+        ui->tableWidget->setItem(mmu->page_table.size(), x, new QTableWidgetItem(QString::number(mmu->page_failures.at(x))));
+    }
 }
 
 void MainWindow::update_combo_box()

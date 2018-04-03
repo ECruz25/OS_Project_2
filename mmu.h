@@ -4,8 +4,10 @@
 #include <QString>
 #include <QList>
 #include <iostream>
+#include <vector>
 
 #include "program.h"
+#include "node.h"
 
 using namespace std;
 
@@ -16,14 +18,16 @@ public:
     int program_amount;
     int page_frames_amount;
     int algorithm; // 0=FIFO, 1=2da Oport
-    QString** page_table;
+    vector<vector<int>> page_table;
+    vector<int> page_failures;
+//    QString** page_table;
     Program* first_program;
     Program* last_program;
     QList<Program*> program_exec_list;
     void add_program(Program *program);
     void create_page_table(int page_amount);
     void add_program_to_exec_list(Program* program);
-    int setup_page_table();
+    void setup_page_table();
     int create_program_id(int random_number);
     Program* get_first_program();
     Program* get_program_by_id(int id, Program* program);

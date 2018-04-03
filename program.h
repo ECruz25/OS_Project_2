@@ -11,6 +11,7 @@ public:
     int size;
     QString name;
     int id;
+    int age;
     Program* previous;
     Program* next;
 };
