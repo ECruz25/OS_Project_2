@@ -34,6 +34,18 @@ void MainWindow::on_page_amount_save_btn_clicked()
 
 void MainWindow::on_setup_btn_clicked()
 {
+    if(ui->algorithm_combo_box->currentText() == "FIFO")
+    {
+        mmu->algorithm = 0;
+    }
+    else if(ui->algorithm_combo_box->currentText() == "LRU")
+    {
+        mmu->algorithm = 2;
+    }
+    if(mmu->program_amount > 0)
+    {
+        mmu->create_page_table(ui->page_amount_edit->text().toInt());
+    }
     counter++;
     if(counter>1)
     {
@@ -62,8 +74,9 @@ void MainWindow::on_setup_btn_clicked()
     //setup page failures
     for(int x = 0; x < mmu->program_exec_list.size(); x++)
     {
-        ui->tableWidget->setItem(mmu->page_table.size(), x, new QTableWidgetItem(QString::number(mmu->page_failures.at(x))));
+        ui->tableWidget->setItem(this->mmu->page_frames_amount, x, new QTableWidgetItem(QString::number(mmu->page_failures.at(x))));
     }
+    ui->lcdNumber->display(this->mmu->get_performance());
 }
 
 void MainWindow::update_combo_box()

@@ -12,6 +12,7 @@ public:
     QString name;
     int id;
     int age;
+    int reference_bit;
     Program* previous;
     Program* next;
 };

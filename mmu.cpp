@@ -24,19 +24,11 @@ void MMU::add_program(Program* program)
 
 void MMU::create_page_table(int page_frames_amount)
 {
-    // paginas = 5
-    // marcos = 3
     this->page_frames_amount = page_frames_amount;
-//    page_table.reserve(page_frames_amount);
-//    for(int i = 0; i < page_amount + 1; i++)
-//    {
-//        page_table.at(i).
-//        page_table[i] = new QString[program_exec_list.size()];
-//    }
-//    despues tengo que agregar uno para ver si hubo fallo de pagina
-    for(int x = 0; x < page_frames_amount; x++){
+    page_table.clear();
+    for(int x = 0; x < program_exec_list.size(); x++){
         vector<int> page_column;
-        page_column.reserve(program_exec_list.size());
+        page_column.reserve(page_frames_amount);
         page_table.push_back(page_column);
     }
 }
@@ -48,6 +40,7 @@ void MMU::add_program_to_exec_list(Program *program)
 
 void MMU::setup_page_table()
 {
+    page_failures.clear();
     for(int x = 0; x < page_table.size(); x++)
     {
         page_table.at(x).clear();
@@ -59,9 +52,14 @@ void MMU::setup_page_table()
         bool added_program = false;
         for(int y = 0; y < programs_in_execution.size(); y++)
         {
+            programs_in_execution.at(y)->age++;
             if(program_exec_list.at(x)->id == programs_in_execution.at(y)->id)
             {
                 page_failures.push_back(0);
+                if(algorithm==2)
+                {
+                    programs_in_execution.at(y)->age = 1;
+                }
                 added_program = true;
             }
         }
@@ -70,7 +68,11 @@ void MMU::setup_page_table()
         {
             if(programs_in_execution.size() < page_frames_amount)
             {
+//                program_exec_list.at(x)->age++;
                 programs_in_execution.append(program_exec_list.at(x));
+                programs_in_execution.at(programs_in_execution.size()-1)->age++;
+//                //no se si funciona
+//                program_exec_list.at(x)->age = 0;
                 page_failures.push_back(1);
                 added_program = true;
             }
@@ -78,11 +80,33 @@ void MMU::setup_page_table()
             {
                 switch (algorithm)
                 {
-                    case 0:
-                        break;
-                    default:
-                        break;
+                case 0:
+                {
+                    int position = get_oldest_program_FIFO(programs_in_execution);
+                    programs_in_execution.insert(position, program_exec_list.at(x));
+                    programs_in_execution.at(position+1)->age = 0;
+                    programs_in_execution.removeAt(position+1);
+                    programs_in_execution.at(position)->age++;
+                    page_failures.push_back(1);
                     added_program = true;
+                }
+                    break;
+                case 2:
+                {
+                    int position = get_oldest_program_FIFO(programs_in_execution);
+                    programs_in_execution.insert(position, program_exec_list.at(x));
+                    programs_in_execution.at(position+1)->age = 0;
+                    programs_in_execution.removeAt(position+1);
+                    programs_in_execution.at(position)->age++;
+                    page_failures.push_back(1);
+                    added_program = true;
+                }
+                    break;
+
+                default:
+                    cout<<"aca";
+                    added_program = true;
+                    break;
                 }
             }
         }
@@ -92,6 +116,26 @@ void MMU::setup_page_table()
             page_table.at(x).push_back(programs_in_execution.at(y)->id);
         }
     }
+}
+
+int MMU::get_oldest_program_FIFO(QList<Program *> list)
+{
+    Program* oldest = list.at(0);
+    for(int y = 0; y < list.size(); y++)
+    {
+        if(list.at(y)->age > oldest->age)
+        {
+            oldest = list.at(y);
+        }
+    }
+    for(int y = 0; y < list.size(); y++)
+    {
+        if(list.at(y)->id == oldest->id)
+        {
+            return y;
+        }
+    }
+    return -1;
 }
 
 int MMU::create_program_id(int random_number)
@@ -104,6 +148,17 @@ int MMU::create_program_id(int random_number)
     {
         return create_program_id(rand()%5000+1);
     }
+}
+
+double MMU::get_performance()
+{
+    int total_failures = 0;
+    for (int x = 0; x < page_failures.size(); ++x)
+    {
+        total_failures+=page_failures.at(x);
+    }
+    double total = 1 - ((double)total_failures/(double)page_failures.size());
+    return total;
 }
 
 Program *MMU::get_first_program()
