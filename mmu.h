@@ -30,6 +30,8 @@ public:
     void setup_page_table();
     int get_oldest_program_FIFO(QList<Program*> list);
     int create_program_id(int random_number);
+    int get_next_position_in_list(Program* program, QList<Program*> list, int last_position);
+    int get_farthest_position(QList<int> list);
     double get_performance();
     Program* get_first_program();
     Program* get_program_by_id(int id, Program* program);

@@ -42,6 +42,10 @@ void MainWindow::on_setup_btn_clicked()
     {
         mmu->algorithm = 2;
     }
+    else if(ui->algorithm_combo_box->currentText() == "Optimo")
+    {
+        mmu->algorithm = 3;
+    }
     if(mmu->program_amount > 0)
     {
         mmu->create_page_table(ui->page_amount_edit->text().toInt());

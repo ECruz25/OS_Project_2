@@ -68,11 +68,8 @@ void MMU::setup_page_table()
         {
             if(programs_in_execution.size() < page_frames_amount)
             {
-//                program_exec_list.at(x)->age++;
                 programs_in_execution.append(program_exec_list.at(x));
                 programs_in_execution.at(programs_in_execution.size()-1)->age++;
-//                //no se si funciona
-//                program_exec_list.at(x)->age = 0;
                 page_failures.push_back(1);
                 added_program = true;
             }
@@ -94,6 +91,34 @@ void MMU::setup_page_table()
                 case 2:
                 {
                     int position = get_oldest_program_FIFO(programs_in_execution);
+                    programs_in_execution.insert(position, program_exec_list.at(x));
+                    programs_in_execution.at(position+1)->age = 0;
+                    programs_in_execution.removeAt(position+1);
+                    programs_in_execution.at(position)->age++;
+                    page_failures.push_back(1);
+                    added_program = true;
+                }
+                    break;
+                case 3:
+                {
+                    QList<int> positions;
+                    for(int z = 0; z < programs_in_execution.size(); z++)
+                    {
+                        positions.append(this->get_next_position_in_list(programs_in_execution.at(z), program_exec_list, x));
+                    }
+                    int position = get_farthest_position(positions);
+                    if(position == -1)
+                    {
+                        QList<Program*> programs_not_being_used_again;
+                        for (int p = 0; p < positions.size(); p++)
+                        {
+                            if(positions.at(p) == -1)
+                            {
+                                programs_not_being_used_again.append(programs_in_execution.at(p));
+                            }
+                        }
+                        position = get_oldest_program_FIFO(programs_not_being_used_again);
+                    }
                     programs_in_execution.insert(position, program_exec_list.at(x));
                     programs_in_execution.at(position+1)->age = 0;
                     programs_in_execution.removeAt(position+1);
@@ -148,6 +173,41 @@ int MMU::create_program_id(int random_number)
     {
         return create_program_id(rand()%5000+1);
     }
+}
+
+int MMU::get_next_position_in_list(Program *program, QList<Program *> list, int last_position)
+{
+    for (int x = last_position; x < list.size(); x++)
+    {
+        if(list.at(x)->id == program->id){
+            return x;
+        }
+    }
+    return -1;
+}
+
+int MMU::get_farthest_position(QList<int> list)
+{
+    int farthest_number = list.at(0);
+    for (int x = 0; x < list.size(); x++)
+    {
+        if (list.at(x) == -1)
+        {
+            return -1;
+        }
+        else if (list.at(x) > farthest_number)
+        {
+            farthest_number = list.at(x);
+        }
+    }
+    for (int x = 0; x < list.size(); x++)
+    {
+        if (list.at(x) == farthest_number)
+        {
+            return x;
+        }
+    }
+    return -1;
 }
 
 double MMU::get_performance()
