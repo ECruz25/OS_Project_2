@@ -15,6 +15,7 @@ class MMU
 {
 public:
     MMU();
+    int randomNumbeer = 0;
     int program_amount;
     int page_frames_amount;
     int algorithm; // 0=FIFO, 1=2da Oport, 2=LRU, 3=OPT, 4=NRU
@@ -36,6 +37,7 @@ public:
     Program* get_first_program();
     Program* get_program_by_id(int id, Program* program);
     Program* get_program_by_name(QString name, Program* program);
+    QList<Program*> fix_program_exec_list(QList<Program*> list);
 };
 
 #endif // MMU_H

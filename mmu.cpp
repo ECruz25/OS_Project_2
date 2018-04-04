@@ -40,6 +40,7 @@ void MMU::add_program_to_exec_list(Program *program)
 
 void MMU::setup_page_table()
 {
+    randomNumbeer++;
     page_failures.clear();
     for(int x = 0; x < page_table.size(); x++)
     {
@@ -59,6 +60,10 @@ void MMU::setup_page_table()
                 if(algorithm==2)
                 {
                     programs_in_execution.at(y)->age = 1;
+                }
+                else if(algorithm==1)
+                {
+                    programs_in_execution.at(y)->reference_bit = 1;
                 }
                 added_program = true;
             }
@@ -82,6 +87,23 @@ void MMU::setup_page_table()
                     int position = get_oldest_program_FIFO(programs_in_execution);
                     programs_in_execution.insert(position, program_exec_list.at(x));
                     programs_in_execution.at(position+1)->age = 0;
+                    programs_in_execution.removeAt(position+1);
+                    programs_in_execution.at(position)->age++;
+                    page_failures.push_back(1);
+                    added_program = true;
+                }
+                    break;
+                case 1:
+                {
+                    if(x == 10)
+                    {
+                        cout<<"asda";
+                    }
+                    int position = get_oldest_program_FIFO(programs_in_execution);
+                    // le intento cambiar el bit de referencia, pero lo hago adentro de la funcion y eso no me da nada
+                    programs_in_execution = fix_program_exec_list(programs_in_execution);
+                    programs_in_execution.insert(position, program_exec_list.at(x));
+                    programs_in_execution.at(position+1)->age = 0                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ;
                     programs_in_execution.removeAt(position+1);
                     programs_in_execution.at(position)->age++;
                     page_failures.push_back(1);
@@ -116,6 +138,11 @@ void MMU::setup_page_table()
                             {
                                 programs_not_being_used_again.append(programs_in_execution.at(p));
                             }
+                            else
+                            {
+                                //aca devuelve la posicion de cuales no se estan usando, pero despues se usa esa posicion en un arreglo mas grande
+                                programs_not_being_used_again.append(new Program("random", 1, this->create_program_id(rand()%5000+1)));
+                            }
                         }
                         position = get_oldest_program_FIFO(programs_not_being_used_again);
                     }
@@ -145,16 +172,31 @@ void MMU::setup_page_table()
 
 int MMU::get_oldest_program_FIFO(QList<Program *> list)
 {
-    Program* oldest = list.at(0);
+    Program* oldest = new Program("random", 1, this->create_program_id(rand()%5000+1));
     for(int y = 0; y < list.size(); y++)
     {
         if(list.at(y)->age > oldest->age)
         {
-            oldest = list.at(y);
+            if(list.at(y)->reference_bit!=1)
+            {
+                oldest = list.at(y);
+            }
+//            else
+//            {
+//                if(list.at(y)->name == "1")
+//                {
+//                    cout<<1;
+//                }
+//                list.at(y)->reference_bit = 0;
+//            }
         }
     }
     for(int y = 0; y < list.size(); y++)
     {
+        if(list.at(y)->age > oldest->age)
+        {
+            list.at(y)->reference_bit = 0;
+        }
         if(list.at(y)->id == oldest->id)
         {
             return y;
@@ -262,4 +304,37 @@ Program *MMU::get_program_by_name(QString name, Program *program)
             return get_program_by_name(name, program->next);
         }
     }
+}
+
+
+
+QList<Program *> MMU::fix_program_exec_list(QList<Program *> list)
+{
+    Program* oldest = new Program("random", 1, this->create_program_id(rand()%5000+1));
+    for(int y = 0; y < list.size(); y++)
+    {
+        if(list.at(y)->age > oldest->age)
+        {
+            if(list.at(y)->reference_bit!=1)
+            {
+                oldest = list.at(y);
+            }
+//            else
+//            {
+//                if(list.at(y)->name == "1")
+//                {
+//                    cout<<1;
+//                }
+//                list.at(y)->reference_bit = 0;
+//            }
+        }
+    }
+    for(int y = 0; y < list.size(); y++)
+    {
+        if(list.at(y)->age > oldest->age)
+        {
+            list.at(y)->reference_bit = 0;
+        }
+    }
+    return list;
 }
